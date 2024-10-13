@@ -38,36 +38,29 @@ function App() {
     localStorage.setItem('voiceNotes', JSON.stringify(voiceNotes));
   }, [voiceNotes]);
 
-const startRecording = async () => {
-  setRecording(true);
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const recorder = new MediaRecorder(stream);
-    setMediaRecorder(recorder);
-    const audioChunks: Blob[] = [];
+  const startRecording = async () => {
+    setRecording(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder);
+      const audioChunks: Blob[] = [];
 
-    recorder.addEventListener('dataavailable', (event) => {
-      audioChunks.push(event.data);
-    });
+      recorder.addEventListener('dataavailable', (event) => {
+        audioChunks.push(event.data);
+      });
 
-    recorder.addEventListener('stop', async () => {
-      const audioBlob = new Blob(audioChunks);
-      const audioFile = new File([audioBlob], 'audio.wav', { type: 'audio/wav' });
-      await transcribeAudio(audioFile);
-    });
+      recorder.addEventListener('stop', async () => {
+        const audioBlob = new Blob(audioChunks);
+        const audioFile = new File([audioBlob], 'audio.wav', { type: 'audio/wav' });
+        await transcribeAudio(audioFile);
+      });
 
-    recorder.start();
-  } catch (error) {
-    console.error('Error starting recording:', error);
-    if (error.name === 'NotAllowedError') {
-      alert('Microphone access was denied. Please allow access to your microphone.');
-    } else {
-      alert('Error accessing microphone. Please try again.');
+      recorder.start();
+    } catch (error) {
+      console.error('Error starting recording:', error);
     }
-    setRecording(false);
-  }
-};
-
+  };
 
   const stopRecording = () => {
     if (mediaRecorder && recording) {
@@ -94,23 +87,22 @@ const startRecording = async () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Format timestamp and note
-    const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-    const formattedNote = `${timestamp}\n${transcribedText}`;
+      const data = await response.json();
+      const transcribedText = data.text;
 
-    const newNote: VoiceNote = {
-      id: Date.now().toString(),
-      date: format(selectedDate, 'yyyy-MM-dd'),
-      text: formattedNote,
-      completed: false,
-    };
-    setVoiceNotes([...voiceNotes, newNote]);
-  } catch (error) {
-    console.error("Error transcribing audio:", error);
-  } finally {
-    setRecording(false);
-  }
-};
+      const newNote: VoiceNote = {
+        id: Date.now().toString(),
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        text: transcribedText,
+        completed: false,
+      };
+      setVoiceNotes([...voiceNotes, newNote]);
+    } catch (error) {
+      console.error("Error transcribing audio:", error);
+    } finally {
+      setRecording(false);
+    }
+  };
 
   const toggleNoteCompletion = (id: string) => {
     setVoiceNotes(voiceNotes.map(note =>
@@ -134,7 +126,7 @@ const startRecording = async () => {
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-3xl font-bold text-center mb-8 text-indigo-600">Voice Notes</h1>
+        <h1 className="text-3xl font-bold text-center mb-8 text-indigo-600">Voice Notes App</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <Calendar
@@ -202,4 +194,5 @@ const startRecording = async () => {
     </div>
   );
 }
+
 export default App;
