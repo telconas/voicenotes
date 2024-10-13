@@ -38,29 +38,36 @@ function App() {
     localStorage.setItem('voiceNotes', JSON.stringify(voiceNotes));
   }, [voiceNotes]);
 
-  const startRecording = async () => {
-    setRecording(true);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      setMediaRecorder(recorder);
-      const audioChunks: Blob[] = [];
+const startRecording = async () => {
+  setRecording(true);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+    setMediaRecorder(recorder);
+    const audioChunks: Blob[] = [];
 
-      recorder.addEventListener('dataavailable', (event) => {
-        audioChunks.push(event.data);
-      });
+    recorder.addEventListener('dataavailable', (event) => {
+      audioChunks.push(event.data);
+    });
 
-      recorder.addEventListener('stop', async () => {
-        const audioBlob = new Blob(audioChunks);
-        const audioFile = new File([audioBlob], 'audio.wav', { type: 'audio/wav' });
-        await transcribeAudio(audioFile);
-      });
+    recorder.addEventListener('stop', async () => {
+      const audioBlob = new Blob(audioChunks);
+      const audioFile = new File([audioBlob], 'audio.wav', { type: 'audio/wav' });
+      await transcribeAudio(audioFile);
+    });
 
-      recorder.start();
-    } catch (error) {
-      console.error('Error starting recording:', error);
+    recorder.start();
+  } catch (error) {
+    console.error('Error starting recording:', error);
+    if (error.name === 'NotAllowedError') {
+      alert('Microphone access was denied. Please allow access to your microphone.');
+    } else {
+      alert('Error accessing microphone. Please try again.');
     }
-  };
+    setRecording(false);
+  }
+};
+
 
   const stopRecording = () => {
     if (mediaRecorder && recording) {
