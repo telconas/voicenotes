@@ -90,14 +90,13 @@ function App() {
       const data = await response.json();
       const transcribedText = data.text;
 
-          // Format timestamp and note
-    const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-    const formattedNote = `${timestamp}\n${transcribedText}`;
+      const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+      const formattedNote = `${timestamp}\n${transcribedText}`;
 
       const newNote: VoiceNote = {
         id: Date.now().toString(),
         date: format(selectedDate, 'yyyy-MM-dd'),
-        text: transcribedText,
+        text: formattedNote,
         completed: false,
       };
       setVoiceNotes([...voiceNotes, newNote]);
@@ -108,6 +107,17 @@ function App() {
     }
   };
 
+  // Adjusted filtering logic for search
+  const filteredNotes = voiceNotes.filter(note => {
+    // Extract note content after the timestamp for searching
+    const noteContent = note.text.split('\n')[1] || ''; 
+    const matchesSearchTerm = noteContent.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDate = note.date === format(selectedDate, 'yyyy-MM-dd');
+  
+    // Show filtered results by searchTerm, otherwise by date
+    return searchTerm ? matchesSearchTerm : matchesDate;
+  });
+
   const toggleNoteCompletion = (id: string) => {
     setVoiceNotes(voiceNotes.map(note =>
       note.id === id ? { ...note, completed: !note.completed } : note
@@ -117,16 +127,6 @@ function App() {
   const deleteNote = (id: string) => {
     setVoiceNotes(voiceNotes.filter(note => note.id !== id));
   };
-
-const filteredNotes = voiceNotes.filter(note => {
-  const noteContent = note.text.split('\n')[1] || ''; // Skip the timestamp
-  const matchesSearchTerm = noteContent.toLowerCase().includes(searchTerm.toLowerCase());
-  const matchesDate = note.date === format(selectedDate, 'yyyy-MM-dd');
-
-  // If there's a search term, only filter by the term; otherwise, filter by date
-  return searchTerm ? matchesSearchTerm : matchesDate;
-});
-
 
   if (!isLoggedIn) {
     return <Login onLogin={setIsLoggedIn} />;
@@ -165,13 +165,13 @@ const filteredNotes = voiceNotes.filter(note => {
           </div>
           <div>
             <div className="mb-4">
-          <input
-  type="text"
-  placeholder="Search notes..."
-  value={searchTerm}
-  onChange={(e) => setSearchTerm(e.target.value)}  // Updates searchTerm as you type
-  className="w-full px-3 py-2 border border-gray-300 rounded-md"/>
-              
+              <input
+                type="text"
+                placeholder="Search notes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
               <Search className="inline-block ml-2 w-5 h-5 text-gray-500" />
             </div>
             <ul className="space-y-2">
