@@ -90,6 +90,10 @@ function App() {
       const data = await response.json();
       const transcribedText = data.text;
 
+          // Format timestamp and note
+    const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+    const formattedNote = `${timestamp}\n${transcribedText}`;
+
       const newNote: VoiceNote = {
         id: Date.now().toString(),
         date: format(selectedDate, 'yyyy-MM-dd'),
