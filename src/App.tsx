@@ -94,22 +94,23 @@ const startRecording = async () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      const transcribedText = data.text;
+      // Format timestamp and note
+    const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+    const formattedNote = `${timestamp}\n${transcribedText}`;
 
-      const newNote: VoiceNote = {
-        id: Date.now().toString(),
-        date: format(selectedDate, 'yyyy-MM-dd'),
-        text: transcribedText,
-        completed: false,
-      };
-      setVoiceNotes([...voiceNotes, newNote]);
-    } catch (error) {
-      console.error("Error transcribing audio:", error);
-    } finally {
-      setRecording(false);
-    }
-  };
+    const newNote: VoiceNote = {
+      id: Date.now().toString(),
+      date: format(selectedDate, 'yyyy-MM-dd'),
+      text: formattedNote,
+      completed: false,
+    };
+    setVoiceNotes([...voiceNotes, newNote]);
+  } catch (error) {
+    console.error("Error transcribing audio:", error);
+  } finally {
+    setRecording(false);
+  }
+};
 
   const toggleNoteCompletion = (id: string) => {
     setVoiceNotes(voiceNotes.map(note =>
