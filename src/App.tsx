@@ -118,10 +118,15 @@ function App() {
     setVoiceNotes(voiceNotes.filter(note => note.id !== id));
   };
 
-  const filteredNotes = voiceNotes.filter(note =>
-    note.date === format(selectedDate, 'yyyy-MM-dd') &&
-    note.text.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+const filteredNotes = voiceNotes.filter(note => {
+  const noteContent = note.text.split('\n')[1] || ''; // Skip the timestamp
+  const matchesSearchTerm = noteContent.toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesDate = note.date === format(selectedDate, 'yyyy-MM-dd');
+
+  // If there's a search term, only filter by the term; otherwise, filter by date
+  return searchTerm ? matchesSearchTerm : matchesDate;
+});
+
 
   if (!isLoggedIn) {
     return <Login onLogin={setIsLoggedIn} />;
