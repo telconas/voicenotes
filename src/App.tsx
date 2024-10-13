@@ -90,7 +90,24 @@ function App() {
       const data = await response.json();
       const transcribedText = data.text;
 
-      const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+     const formatTimestamp = (timestamp) => {
+  const date = new Date(timestamp); // Create a Date object from the timestamp
+  
+  return date.toLocaleString('en-US', {
+    month: 'short',   // Oct
+    day: 'numeric',   // 13
+    year: 'numeric',  // 2024
+    hour: 'numeric',  // 3
+    minute: 'numeric',// 38
+    hour12: true      // PM
+  });
+};
+
+// Example usage:
+const timestamp = "2024-10-13 15:38:31";
+const formattedDate = formatTimestamp(timestamp);
+console.log(formattedDate);  // Output: "Oct 13, 2024, 3:38 PM"
+
       const formattedNote = `${timestamp}\n${transcribedText}`;
 
       const newNote: VoiceNote = {
