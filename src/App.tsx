@@ -19,6 +19,7 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [voiceNotes, setVoiceNotes] = useState<VoiceNote[]>([]);
   const [recording, setRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -27,7 +28,6 @@ function App() {
       setIsLoggedIn(true);
     }
 
-    // Load voice notes from localStorage
     const savedNotes = localStorage.getItem('voiceNotes');
     if (savedNotes) {
       setVoiceNotes(JSON.parse(savedNotes));
@@ -35,7 +35,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Save voice notes to localStorage whenever they change
     localStorage.setItem('voiceNotes', JSON.stringify(voiceNotes));
   }, [voiceNotes]);
 
@@ -43,23 +42,29 @@ function App() {
     setRecording(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder);
       const audioChunks: Blob[] = [];
 
-      mediaRecorder.addEventListener("dataavailable", (event) => {
+      recorder.addEventListener('dataavailable', (event) => {
         audioChunks.push(event.data);
       });
 
-      mediaRecorder.addEventListener("stop", async () => {
+      recorder.addEventListener('stop', async () => {
         const audioBlob = new Blob(audioChunks);
-        const audioFile = new File([audioBlob], "audio.wav", { type: "audio/wav" });
+        const audioFile = new File([audioBlob], 'audio.wav', { type: 'audio/wav' });
         await transcribeAudio(audioFile);
       });
 
-      mediaRecorder.start();
-      setTimeout(() => mediaRecorder.stop(), 5000000); // Record for 5 seconds
+      recorder.start();
     } catch (error) {
-      console.error("Error recording audio:", error);
+      console.error('Error starting recording:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && recording) {
+      mediaRecorder.stop();
       setRecording(false);
     }
   };
@@ -121,7 +126,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-3xl font-bold text-center mb-8 text-indigo-600">Voice Notes App</h1>
+        <h1 className="text-3xl font-bold text-center mb-8 text-indigo-600">Voice Notes</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <Calendar
@@ -139,6 +144,15 @@ function App() {
               {recording ? 'Recording...' : 'Record Voice Note'}
               <Mic className="inline-block ml-2 w-5 h-5" />
             </button>
+
+            {recording && (
+              <button
+                onClick={stopRecording}
+                className="mt-4 w-full py-2 px-4 rounded-md bg-yellow-600 text-white font-semibold hover:bg-yellow-700"
+              >
+                Stop Recording
+              </button>
+            )}
           </div>
           <div>
             <div className="mb-4">
