@@ -165,13 +165,13 @@ const filteredNotes = voiceNotes.filter(note => {
           </div>
           <div>
             <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search notes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
+          <input
+  type="text"
+  placeholder="Search notes..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}  // Updates searchTerm as you type
+  className="w-full px-3 py-2 border border-gray-300 rounded-md"/>
+              
               <Search className="inline-block ml-2 w-5 h-5 text-gray-500" />
             </div>
             <ul className="space-y-2">
